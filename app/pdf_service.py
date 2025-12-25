@@ -107,17 +107,67 @@ class PdfService:
         page = await context.new_page()
 
         try:
+            # Large viewport so content isn't constrained
+            await page.set_viewport_size({"width": 3000, "height": 3000})
+
             # Set the HTML content
-            await page.set_content(html, timeout=180000)
+            await page.set_content(html, wait_until="networkidle", timeout=180000)
 
-            # Wait for DOM to be loaded
-            await page.wait_for_load_state("domcontentloaded", timeout=180000)
+            # Get the exact content bounds
+            dimensions = await page.evaluate("""
+                () => {
+                    const container = document.querySelector('.export-container');
+                    if (container) {
+                        return {
+                            width: container.offsetWidth,
+                            height: container.offsetHeight
+                        };
+                    }
+                    // Fallback: measure actual content
+                    const body = document.body;
+                    return {
+                        width: body.scrollWidth,
+                        height: body.scrollHeight
+                    };
+                }
+            """)
 
-            # Build PDF options dictionary
-            pdf_options = self._build_pdf_options(options)
+            page_width = dimensions['width']
+            page_height = dimensions['height']
 
-            # Generate PDF
-            pdf_bytes = await page.pdf(**pdf_options)
+            log.debug(f"Content size: {page_width}x{page_height}")
+
+            # Force container to origin, remove all spacing
+            await page.add_style_tag(content="""
+                html, body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    width: auto !important;
+                    height: auto !important;
+                }
+                .export-container {
+                    position: absolute !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    margin: 0 !important;
+                }
+            """)
+
+            # Set viewport to exact content size
+            await page.set_viewport_size({"width": page_width, "height": page_height})
+
+            # Wait for fonts
+            await page.evaluate(
+                "() => (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve()"
+            )
+
+            # Generate PDF with exact content dimensions
+            pdf_bytes = await page.pdf(
+                width=f"{page_width}px",
+                height=f"{page_height}px",
+                print_background=True,
+                margin={"top": "0", "right": "0", "bottom": "0", "left": "0"},
+            )
 
             log.debug(f"Generated PDF: {len(pdf_bytes)} bytes")
             return pdf_bytes

@@ -43,8 +43,8 @@ class TestPdfServiceGeneratePdf:
 
         await service.generate_pdf(sample_html)
 
-        # Verify that wait_for_load_state was called (fonts/network idle)
-        mock_page.wait_for_load_state.assert_called()
+        # Verify that evaluate was called (for font waiting)
+        mock_page.evaluate.assert_called()
 
     @pytest.mark.asyncio
     async def test_generate_pdf_handles_empty_html(self, empty_html, mock_playwright):
@@ -59,20 +59,19 @@ class TestPdfServiceGeneratePdf:
 
     @pytest.mark.asyncio
     async def test_generate_pdf_applies_options(self, sample_html, mock_playwright, mock_page):
-        """generate_pdf should apply PdfOptions to the PDF generation."""
-        from app.models import PdfOptions
+        """generate_pdf should generate PDF with content-adaptive dimensions."""
         from app.pdf_service import PdfService
 
-        options = PdfOptions(format="Letter", landscape=True)
         service = PdfService(playwright=mock_playwright)
 
-        await service.generate_pdf(sample_html, options=options)
+        await service.generate_pdf(sample_html)
 
-        # Verify pdf() was called with expected options
+        # Verify pdf() was called with width/height and print_background
         mock_page.pdf.assert_called()
         call_kwargs = mock_page.pdf.call_args.kwargs
-        assert call_kwargs.get("format") == "Letter"
-        assert call_kwargs.get("landscape") is True
+        assert "width" in call_kwargs
+        assert "height" in call_kwargs
+        assert call_kwargs.get("print_background") is True
 
     @pytest.mark.asyncio
     async def test_generate_pdf_sets_content_correctly(self, sample_html, mock_playwright, mock_page):
@@ -83,7 +82,7 @@ class TestPdfServiceGeneratePdf:
 
         await service.generate_pdf(sample_html)
 
-        mock_page.set_content.assert_called_once_with(sample_html, timeout=180000)
+        mock_page.set_content.assert_called_once_with(sample_html, wait_until="networkidle", timeout=180000)
 
     @pytest.mark.asyncio
     async def test_generate_pdf_closes_page_after_generation(self, sample_html, mock_playwright, mock_page):
