@@ -117,7 +117,7 @@ class PdfService:
             pdf_options = self._build_pdf_options(options)
 
             # Generate PDF
-            pdf_bytes = await page.pdf(**pdf_options, timeout=180000)
+            pdf_bytes = await page.pdf(**pdf_options)
 
             log.debug(f"Generated PDF: {len(pdf_bytes)} bytes")
             return pdf_bytes
