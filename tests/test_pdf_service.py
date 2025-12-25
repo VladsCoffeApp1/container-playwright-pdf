@@ -27,12 +27,8 @@ class TestPdfServiceGeneratePdf:
         # Configure mock to return realistic PDF header
         mock_page.pdf.return_value = b"%PDF-1.4\n%mock content"
 
-        from app.pdf_service import PdfService
-
         # For this test, we need to verify the actual PDF generation
         # When mocked, we verify the mock returns proper format
-        service = PdfService()
-
         # In unit test with mock, we verify our expectations
         result = await mock_page.pdf()
 
@@ -79,9 +75,7 @@ class TestPdfServiceGeneratePdf:
         assert call_kwargs.get("landscape") is True
 
     @pytest.mark.asyncio
-    async def test_generate_pdf_sets_content_correctly(
-        self, sample_html, mock_playwright, mock_page
-    ):
+    async def test_generate_pdf_sets_content_correctly(self, sample_html, mock_playwright, mock_page):
         """generate_pdf should set the HTML content on the page."""
         from app.pdf_service import PdfService
 
@@ -92,9 +86,7 @@ class TestPdfServiceGeneratePdf:
         mock_page.set_content.assert_called_once_with(sample_html)
 
     @pytest.mark.asyncio
-    async def test_generate_pdf_closes_page_after_generation(
-        self, sample_html, mock_playwright, mock_page
-    ):
+    async def test_generate_pdf_closes_page_after_generation(self, sample_html, mock_playwright, mock_page):
         """generate_pdf should close the page after generating PDF."""
         from app.pdf_service import PdfService
 

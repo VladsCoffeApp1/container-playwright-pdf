@@ -94,9 +94,7 @@ class TestPdfEndpointOptions:
             pytest.param("A3", 200, id="a3_format"),
         ],
     )
-    def test_pdf_endpoint_accepts_paper_formats(
-        self, test_client, sample_html, format_value, expected_status
-    ):
+    def test_pdf_endpoint_accepts_paper_formats(self, test_client, sample_html, format_value, expected_status):
         """POST /pdf should accept various paper format options."""
         payload = {"html": sample_html, "options": {"format": format_value}}
 

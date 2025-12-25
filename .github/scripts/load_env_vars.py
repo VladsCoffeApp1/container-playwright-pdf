@@ -44,7 +44,7 @@ def write_to_github_env(env_vars: dict[str, str]) -> None:
                     f.write(f"{k}<<{delimiter}\n{v}\n{delimiter}\n")
                 else:
                     f.write(f"{k}={v}\n")
-    except IOError as e:
+    except OSError as e:
         print(f"Error writing to GITHUB_ENV: {e}")
 
 
@@ -63,7 +63,7 @@ def write_gcloud_env_string_to_output(env_vars: dict[str, str]) -> None:
             delimiter = f"EOF_GCLOUD_ENV_{os.urandom(4).hex()}"
             f.write(f"gcloud_env_string<<{delimiter}\n{gcloud_env_string}\n{delimiter}\n")
             f.write("gcloud_vars_generated=true\n")
-    except IOError as e:
+    except OSError as e:
         print(f"Error writing to GITHUB_OUTPUT: {e}")
 
 
