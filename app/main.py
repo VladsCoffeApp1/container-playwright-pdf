@@ -7,8 +7,9 @@ using Playwright/Chromium.
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
+from playwright.async_api import TimeoutError as PlaywrightTimeout
 from loguru import logger as log
 
 from app.models import PdfRequest
@@ -69,10 +70,22 @@ async def generate_pdf(request: PdfRequest) -> Response:
     if pdf_service is None:
         raise RuntimeError("PDF service not initialized")
 
-    pdf_bytes = await pdf_service.generate_pdf(
-        html=request.html,
-        options=request.options,
-    )
+    try:
+        pdf_bytes = await pdf_service.generate_pdf(
+            html=request.html,
+            options=request.options,
+        )
+    except PlaywrightTimeout:
+        raise HTTPException(
+            status_code=504,
+            detail="PDF generation timed out - HTML too large or complex"
+        )
+    except Exception as e:
+        log.error(f"PDF generation failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"PDF generation failed: {str(e)}"
+        )
 
     return Response(
         content=pdf_bytes,

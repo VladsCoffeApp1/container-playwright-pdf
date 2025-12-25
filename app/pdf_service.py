@@ -108,16 +108,16 @@ class PdfService:
 
         try:
             # Set the HTML content
-            await page.set_content(html)
+            await page.set_content(html, timeout=180000)
 
-            # Wait for fonts and network to be idle
-            await page.wait_for_load_state("networkidle")
+            # Wait for DOM to be loaded
+            await page.wait_for_load_state("domcontentloaded", timeout=180000)
 
             # Build PDF options dictionary
             pdf_options = self._build_pdf_options(options)
 
             # Generate PDF
-            pdf_bytes = await page.pdf(**pdf_options)
+            pdf_bytes = await page.pdf(**pdf_options, timeout=180000)
 
             log.debug(f"Generated PDF: {len(pdf_bytes)} bytes")
             return pdf_bytes
