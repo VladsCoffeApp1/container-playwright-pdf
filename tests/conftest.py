@@ -12,10 +12,13 @@ def test_client():
 
     Note: Import inside fixture to allow tests to run even when
     app module doesn't exist yet (TDD approach).
+
+    Uses context manager to properly execute lifespan events.
     """
     from app.main import app
 
-    return TestClient(app)
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture

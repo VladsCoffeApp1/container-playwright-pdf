@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  playwright-pdf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - PDF_LOG_LEVEL=INFO
+      - PDF_REQUEST_TIMEOUT=60
+    env_file:
+      - project.env
+    restart: unless-stopped
+    # Cloud Run settings simulation
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
