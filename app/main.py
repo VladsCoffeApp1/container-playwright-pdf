@@ -8,6 +8,7 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from playwright.async_api import TimeoutError as PlaywrightTimeout
 from loguru import logger as log
@@ -44,6 +45,21 @@ app = FastAPI(
     title="playwright-pdf",
     description="HTML to PDF conversion service using Playwright",
     lifespan=lifespan,
+)
+
+# Enable CORS for specific origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://127.0.0.1:8000",
+        "https://app.vladscoffe.com",
+        "https://beta.vladscoffe.com",
+        "https://alpha.vladscoffe.com",
+        "https://delta.vladscoffe.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["POST", "GET", "OPTIONS"],
+    allow_headers=["Content-Type"],
 )
 
 
