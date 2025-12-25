@@ -83,7 +83,7 @@ class TestPdfServiceGeneratePdf:
 
         await service.generate_pdf(sample_html)
 
-        mock_page.set_content.assert_called_once_with(sample_html)
+        mock_page.set_content.assert_called_once_with(sample_html, timeout=180000)
 
     @pytest.mark.asyncio
     async def test_generate_pdf_closes_page_after_generation(self, sample_html, mock_playwright, mock_page):
