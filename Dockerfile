@@ -96,8 +96,8 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy Playwright browsers from builder
 COPY --from=builder /ms-playwright /ms-playwright
 
-# Copy application code
-COPY --chown=appuser:appuser app/ ./
+# Copy application code (preserve package structure)
+COPY --chown=appuser:appuser app/ ./app/
 
 # Switch to non-root user
 USER appuser
@@ -106,4 +106,4 @@ USER appuser
 ENV PORT=8080
 
 # Run uvicorn with exec form for signal handling
-CMD ["sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port $PORT"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port $PORT"]
